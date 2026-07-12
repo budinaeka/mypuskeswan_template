@@ -1,0 +1,40 @@
+# === File sampah yang harus diabaikan oleh git ===
+
+# Log aplikasi
+error_log
+*.log
+
+# Backup & versi lama (bak, orig, pre-rebuild)
+*.bak
+*.orig
+*.pre-rebuild.bak
+*.bak.*
+backup/
+*.sql.bak
+
+# File placeholder / error halaman hosting (bukan milik aplikasi)
+default.html
+cp_errordocument.shtml
+
+# Folder unggahan (berisi file user, jangan di-commit)
+uploads/
+!uploads/.gitkeep
+
+# Skrip one-off (hardcoded ke /opt/..., bukan bagian app)
+fix_*.py
+patch-*.js
+
+# Dump database mentah (simpan schema.sql, bukan dump isi)
+*_db_*.sql
+db_*.sql
+*.dump.sql
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# Dependensi (jika nanti pakai npm/php)
+node_modules/
+vendor/
