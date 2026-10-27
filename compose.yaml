@@ -1,0 +1,42 @@
+services:
+  app:
+    image: php:8.2-apache
+    container_name: mypuskeswan-app
+    ports:
+      - "8080:80"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./:/var/www/html
+      - uploads:/var/www/html/uploads
+    environment:
+      DB_HOST: db
+      DB_NAME: mypuskeswan_db
+      DB_USER: mypuskeswan
+      DB_PASSWORD: ${DB_PASSWORD:-change-me}
+    command: >
+      sh -c "docker-php-ext-install pdo pdo_mysql gd && apache2-foreground"
+    restart: unless-stopped
+
+  db:
+    image: mysql:8.0
+    container_name: mypuskeswan-db
+    environment:
+      MYSQL_DATABASE: mypuskeswan_db
+      MYSQL_USER: mypuskeswan
+      MYSQL_PASSWORD: ${DB_PASSWORD:-change-me}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-change-root-me}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p$${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+  uploads:
