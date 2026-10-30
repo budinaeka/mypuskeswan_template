@@ -38,3 +38,9 @@ Thumbs.db
 # Dependensi (jika nanti pakai npm/php)
 node_modules/
 vendor/
+
+# Environment & backup lokal (container)
+.env
+.env.*
+!.env.example
+backups/

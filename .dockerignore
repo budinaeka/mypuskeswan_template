@@ -1,0 +1,39 @@
+# ---- VCS / editor ----
+.git
+.gitignore
+.gitattributes
+.github
+.vscode
+.idea
+*.swp
+*~
+
+# ---- Secrets & environment ----
+.env
+.env.*
+!.env.example
+
+# ---- Data user (jangan ikut image) ----
+uploads/*
+!uploads/.gitkeep
+backup/
+backups/
+*.tar.gz
+*.zip
+
+# ---- Dump / backup database ----
+*_db_*.sql
+db_*.sql
+*.dump.sql
+*.sql.bak
+
+# ---- Dependensi & artefak ----
+node_modules/
+vendor/
+composer.lock
+npm-debug.log*
+*.log
+
+# ---- Dokumentasi ----
+README.md
+docs/

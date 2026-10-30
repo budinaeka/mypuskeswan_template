@@ -32,19 +32,39 @@ try {
     $stmt->execute([$username]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if ($user && $user['password'] === $password) {
-        // Password match (Plain text for now as per schema)
-        // In production, use: if ($user && password_verify($password, $user['password']))
-        
-        // Remove password from response
-        unset($user['password']);
-        
-        echo json_encode($user);
-    } else {
+    if (!$user) {
         http_response_code(401);
         echo json_encode(['error' => 'Username atau password salah']);
+        exit;
     }
+
+    $hash = $user['password'];
+    $ok = false;
+
+    // 1. Coba verifikasi bcrypt (format $2y$...)
+    if (is_string($hash) && str_starts_with($hash, '$2y$')) {
+        $ok = password_verify($password, $hash);
+        // Rehash otomatis bila cost sudah usang
+        if ($ok && password_needs_rehash($hash, PASSWORD_BCRYPT)) {
+            $new = password_hash($password, PASSWORD_BCRYPT);
+            $pdo->prepare('UPDATE users SET password = ? WHERE id = ?')->execute([$new, $user['id']]);
+        }
+    } elseif (hash_equals((string) $hash, (string) $password)) {
+        // 2. Fallback: password plain-text lama → cocok, langsung upgrade ke bcrypt
+        $ok = true;
+        $new = password_hash($password, PASSWORD_BCRYPT);
+        $pdo->prepare('UPDATE users SET password = ? WHERE id = ?')->execute([$new, $user['id']]);
+    }
+
+    if (!$ok) {
+        http_response_code(401);
+        echo json_encode(['error' => 'Username atau password salah']);
+        exit;
+    }
+
+    unset($user['password']);
+    echo json_encode($user);
 } catch (PDOException $e) {
     http_response_code(500);
-    echo json_encode(['error' => $e->getMessage()]);
+    echo json_encode(['error' => 'Terjadi kesalahan server']);
 }

@@ -21,9 +21,15 @@ if ($tahun < 2020 || $tahun > 2100) {
     exit;
 }
 
-// Run the Python script
-$script = '/opt/admin-puskeswan/generate_iki_skp.py';
-$cmd = "python3 $script $bulan $tahun 2>&1";
+// Run the Python script (path bisa dioverride via env IKI_SKP_SCRIPT,
+// default path lama VPS; di container set ke script yang dibundel)
+$script = getenv('IKI_SKP_SCRIPT') ?: '/opt/admin-puskeswan/generate_iki_skp.py';
+if (!is_file($script) || !is_readable($script)) {
+    http_response_code(501);
+    echo json_encode(['error' => 'Generator IKI-SKP belum tersedia di server ini']);
+    exit;
+}
+$cmd = escapeshellcmd(PHP_BINARY ? 'python3' : 'python3') . ' ' . escapeshellarg($script) . ' ' . escapeshellarg((string) $bulan) . ' ' . escapeshellarg((string) $tahun) . ' 2>&1';
 $output = shell_exec($cmd);
 
 // Parse output for the file path
